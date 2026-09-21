@@ -107,28 +107,32 @@ cp .env.example .env
 
 Hint: adjust the `UID` and `GID` variables in the `.env` file to match your user ID and group ID. You can find these by running `id -u` and `id -g` in the terminal.
 
-2. Start the Docker Compose Services:
+2. Build the workspace image and install Laravel dependencies:
+
+```bash
+docker compose -f compose.dev.yaml run --rm workspace composer install
+```
+
+3. Start the Docker Compose Services:
 
 ```bash
 docker compose -f compose.dev.yaml up -d
 ```
 
-3. Install Laravel Dependencies:
+4. Install frontend dependencies and start Vite:
 
 ```bash
-docker compose -f compose.dev.yaml exec workspace bash
-composer install
-npm install
-npm run dev
+docker compose -f compose.dev.yaml exec workspace npm install
+docker compose -f compose.dev.yaml exec workspace npm run dev
 ```
 
-4. Run Migrations:
+5. Run Migrations:
 
 ```bash
 docker compose -f compose.dev.yaml exec workspace php artisan migrate
 ```
 
-5. Access the Application:
+6. Access the Application:
 
 Open your browser and navigate to [http://localhost](http://localhost).
 
