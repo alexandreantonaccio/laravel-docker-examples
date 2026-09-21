@@ -126,10 +126,14 @@ docker compose -f compose.dev.yaml exec workspace npm install
 docker compose -f compose.dev.yaml exec workspace npm run dev
 ```
 
-5. Run Migrations:
+5. Run Migrations / re run services:
 
 ```bash
 docker compose -f compose.dev.yaml exec workspace php artisan migrate
+```
+
+```bash
+docker compose -f compose.dev.yaml up -d
 ```
 
 6. Access the Application:
