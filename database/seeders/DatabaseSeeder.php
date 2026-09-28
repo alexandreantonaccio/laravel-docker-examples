@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,11 +12,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call(PermissionSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        foreach (config('users.allowed_email_domains', []) as $domain) {
+            \App\Models\EmailDomain::query()->firstOrCreate(['domain' => $domain], ['active' => true]);
+        }
+
+        foreach ([
+            ['type' => 'course', 'value' => 'OUTRO'],
+            ['type' => 'job_title', 'value' => 'OUTRO'],
+            ['type' => 'job_title', 'value' => config('users.professor_job_title')],
+            ['type' => 'employment_link', 'value' => 'OUTRO'],
+        ] as $option) {
+            \App\Models\UserProfileOption::query()->firstOrCreate($option, ['active' => true]);
+        }
     }
 }

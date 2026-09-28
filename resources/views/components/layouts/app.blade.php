@@ -11,8 +11,22 @@
 <body>
     <header class="topbar">
         <a class="brand" href="{{ auth()->check() ? route('users.index') : route('login') }}">Userboard</a>
+            <a class="brand" href="{{ auth()->check() ? route('profile.show') : route('login') }}">Userboard</a>
         @auth
             <nav class="topbar-nav">
+                            <nav class="topbar-nav">
+                                @if (auth()->user()->hasPermissionTo('usuarios.visualizar.proprio'))
+                                    <a class="text-link" href="{{ route('profile.show') }}">Meus dados</a>
+                                @endif
+                                @if (auth()->user()->hasPermissionTo('usuarios.listar'))
+                                    <a class="text-link" href="{{ route('users.index') }}">Usuários</a>
+                                @endif
+                                @if (auth()->user()->hasPermissionTo('usuarios.aprovar'))
+                                    <a class="text-link" href="{{ route('users.pending') }}">Pendentes</a>
+                                @endif
+                                @if (auth()->user()->hasPermissionTo('grupos_permissoes.criar') || auth()->user()->hasPermissionTo('grupos_permissoes.editar'))
+                                    <a class="text-link" href="{{ route('groups.index') }}">Grupos</a>
+                                @endif
                 <span class="user-label">{{ auth()->user()->name }}</span>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

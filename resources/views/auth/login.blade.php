@@ -3,6 +3,7 @@
         <div class="eyebrow">Área restrita</div>
         <h1>Entre na sua conta</h1>
         <p class="muted">Acesse o painel para gerenciar os usuários cadastrados.</p>
+    <p class="muted">Entre com seu e-mail institucional para continuar.</p>
 
         <form method="POST" action="{{ route('login.store') }}" class="stack-form">
             @csrf
@@ -15,11 +16,14 @@
                 <input id="password" name="password" type="password" required autocomplete="current-password">
             </div>
             <label class="checkbox-label">
+                            <a class="text-link" href="{{ route('password.request') }}">Esqueci minha senha</a>
+                            <label class="checkbox-label">
                 <input name="remember" type="checkbox" value="1"> Lembrar de mim
             </label>
             <button class="button button-primary button-wide" type="submit">Entrar</button>
         </form>
 
         <p class="auth-footer">Ainda não tem conta? <a href="{{ route('register') }}">Criar cadastro</a></p>
+        <p class="auth-footer">E-mail não confirmado? <a href="{{ route('verification.notice') }}">Reenviar confirmação</a></p>
     </section>
 </x-layouts.app>

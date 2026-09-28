@@ -136,7 +136,12 @@ docker compose -f compose.dev.yaml exec workspace php artisan migrate
 docker compose -f compose.dev.yaml up -d
 ```
 
-6. Access the Application:
+6. Empty tables:
+```bash
+docker compose -f compose.dev.yaml exec workspace php artisan migrate:fresh --seed
+```
+
+7. Access the Application:
 
 Open your browser and navigate to [http://localhost](http://localhost).
 
