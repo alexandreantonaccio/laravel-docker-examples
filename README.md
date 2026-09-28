@@ -141,7 +141,28 @@ docker compose -f compose.dev.yaml up -d
 docker compose -f compose.dev.yaml exec workspace php artisan migrate:fresh --seed
 ```
 
-7. Access the Application:
+7. Manual Email Verifying:
+- open tinker
+```bash
+docker compose -f compose.dev.yaml exec workspace php artisan tinker
+```
+- grant access
+```bash
+<?php
+$user = \App\Models\User::where('email', 'alexandre.antonaccio@ufam.edu.br')->firstOrFail();
+
+$user->forceFill([
+    'email_verified_at' => now(),
+    'registration_status' => 'email_confirmed',
+    'is_active' => true,
+])->save();
+```
+```bash
+<?php
+$user->fresh()->canLogin();
+```
+
+8. Access the Application:
 
 Open your browser and navigate to [http://localhost](http://localhost).
 
