@@ -147,9 +147,14 @@ docker compose -f compose.dev.yaml exec workspace php artisan migrate:fresh --se
 docker compose -f compose.dev.yaml exec workspace php artisan tinker
 ```
 - grant access
+
+```bash
+docker compose -f compose.dev.yaml exec workspace php artisan access:grant usermail@ufam.edu.br usuarios.aprovar 
+```
+
 ```bash
 <?php
-$user = \App\Models\User::where('email', 'alexandre.antonaccio@ufam.edu.br')->firstOrFail();
+$user = \App\Models\User::where('email', 'user.type@ufam.edu.br')->firstOrFail();
 
 $user->forceFill([
     'email_verified_at' => now(),

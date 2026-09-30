@@ -24,6 +24,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         'name',
         'email',
         'password',
+        'account_type',
         'functional_id',
         'phone',
         'profile',
@@ -94,6 +95,10 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
 
     public function hasPermissionTo(string $permission): bool
     {
+        if ($this->isAdministrator()) {
+            return true;
+        }
+
         $permissionId = Permission::query()->where('key', $permission)->value('id');
 
         if (! $permissionId) {
@@ -115,6 +120,11 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         return $this->groups()
             ->whereHas('permissions', fn ($query) => $query->whereKey($permissionId))
             ->exists();
+    }
+
+    public function isAdministrator(): bool
+    {
+        return $this->account_type === config('users.administrator_account_type');
     }
 
     public function effectivePermissions(): array

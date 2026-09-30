@@ -2,6 +2,9 @@
 
 return [
     'administrator_email' => env('USERS_ADMINISTRATOR_EMAIL'),
+    'administrator_password' => env('USERS_ADMINISTRATOR_PASSWORD', 'password'),
+    'administrator_account_type' => 'administrator',
+    'default_account_type' => 'user',
     'verification_expiration_hours' => 24,
     'pending_registration_expiration_hours' => 24,
     'login_attempts' => 5,

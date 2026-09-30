@@ -111,6 +111,14 @@ test('authenticated users can change their own password with the current passwor
     expect(Hash::check('changed123', $user->fresh()->password))->toBeTrue();
 });
 
+test('administrator accounts have all permissions independently of user profiles', function () {
+    $admin = User::factory()->create(['account_type' => 'administrator', 'profile' => null]);
+
+    expect($admin->isAdministrator())->toBeTrue();
+    expect($admin->hasPermissionTo('usuarios.aprovar'))->toBeTrue();
+    expect($admin->hasPermissionTo('grupos_permissoes.excluir'))->toBeTrue();
+});
+
 test('only confirmed active users can log in and rejected users may still authenticate', function () {
     $pending = User::factory()->create([
         'email' => 'pending@ufam.edu.br',

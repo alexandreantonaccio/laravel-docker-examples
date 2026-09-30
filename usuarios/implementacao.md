@@ -44,3 +44,7 @@ Execute a suíte no container de desenvolvimento, que contém os drivers PHP nec
 ```bash
 docker compose -f compose.dev.yaml exec workspace php artisan test
 ```
+
+```bash
+docker compose -f compose.dev.yaml exec workspace php artisan access:grant usermail@ufam.edu.br usuarios.aprovar 
+```
