@@ -53,6 +53,7 @@ A3. O sistema notifica o usuário sobre a reativação.
 - **RN04 - Ortogonal ao Status do Cadastro:** A desativação é independente do status do ciclo de cadastro (Pendente/E-mail Confirmado/Aprovado/Rejeitado). Ao reativar, o usuário retoma o status que tinha antes.
 - **RN05 - Sistema Não Exclui Usuários:** O sistema **não** oferece exclusão de usuários. A desativação é a medida máxima disponível na aplicação (preserva histórico e integridade referencial com agendamentos, empréstimos etc.). Caso uma exclusão definitiva seja realmente necessária, ela é feita **manualmente no banco de dados**, fora do escopo do sistema, por decisão administrativa.
 - **RN06 - Sem Auto-Encerramento de Conta:** O próprio usuário **não** pode desativar nem excluir a própria conta. O encerramento/desativação é sempre uma ação de um Administrador (com `usuarios.desativar`).
+- **RN07 - Proteção do SuperAdmin:** A conta **SuperAdmin** não pode ser desativada por nenhum outro usuário, independentemente das permissões (ver ADR-004 em `docs/referencias/decisoes-tecnicas.md`). O sistema recusa a desativação do SuperAdmin.
 
 > **Pendência de integração:** o tratamento das solicitações ativas de um
 > usuário desativado (agendamentos futuros, empréstimos em aberto) será

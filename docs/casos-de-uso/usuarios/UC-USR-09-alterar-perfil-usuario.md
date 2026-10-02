@@ -75,6 +75,7 @@ campos **específicos** que passam a existir ou deixam de existir.
   > tratar sua ausência.
 - **RN05 - Auditoria:** Toda alteração de perfil é registrada com autor, data/hora e a transição (perfil anterior → novo).
 - **RN06 - Identificação Funcional Preservada:** A alteração de perfil não altera o valor da identificação funcional (coluna única); apenas o rótulo exibido pode mudar (Matrícula/SIAPE).
+- **RN07 - Proteção do SuperAdmin:** O perfil da conta **SuperAdmin** não pode ser alterado por nenhum outro usuário, independentemente das permissões (ver ADR-004 em `docs/referencias/decisoes-tecnicas.md`). O sistema recusa a alteração de perfil que tenha o SuperAdmin como alvo, exceto pelo próprio SuperAdmin.
 
 > **NOTA:** a alteração de perfil não altera automaticamente os grupos de
 > permissões do usuário (perfil e permissões são independentes — ver
