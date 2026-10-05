@@ -17,7 +17,6 @@
                             <small>{{ $permission->label }} · {{ $isEffective ? 'Efetiva' : 'Não efetiva' }}</small>
                             <small>{{ $groupsForPermission->isNotEmpty() ? 'Grupos: '.$groupsForPermission->join(', ') : 'Sem concessão por grupo' }}</small>
                         </div>
-                        @if ($groupsForPermission->isNotEmpty())
                         <div class="field">
                             <label for="adjustment-{{ $permission->id }}">Ajuste individual</label>
                             <select id="adjustment-{{ $permission->id }}" name="adjustments[{{ $permission->id }}]">

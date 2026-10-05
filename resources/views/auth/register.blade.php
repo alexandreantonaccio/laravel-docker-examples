@@ -24,8 +24,18 @@
                 <input id="name" name="name" type="text" value="{{ old('name') }}" required autofocus autocomplete="name">
             </div>
             <div class="field">
-                <label for="email">E-mail institucional</label>
-                <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="email">
+                <label for="email_local">E-mail institucional</label>
+                <div class="email-composer">
+                    <input id="email_local" name="email_local" type="text" value="{{ old('email_local') }}" placeholder="parte.local" required autocomplete="username" @disabled($domains->isEmpty())>
+                    <span>@</span>
+                    <select id="email_domain" name="email_domain" required @disabled($domains->isEmpty())>
+                        <option value="">Selecione o domínio</option>
+                        @foreach ($domains as $domain)
+                            <option value="{{ $domain->domain }}" @selected(old('email_domain', $domain->is_default ? $domain->domain : '') === $domain->domain)>{{ $domain->domain }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                @if ($domains->isEmpty())<small>Não há domínios de e-mail ativos. Solicite a ativação de um domínio ao administrador.</small>@endif
             </div>
             <div class="field">
                 <label for="phone">Telefone</label>

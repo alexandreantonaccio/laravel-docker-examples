@@ -54,23 +54,67 @@ class UserController extends Controller
 
     public function edit(User $user): View
     {
+        $emailParts = explode('@', $user->email, 2);
+        $options = UserProfileOption::query()->where(function ($query) use ($user): void {
+            $query->where('active', true)->orWhere(function ($query) use ($user): void {
+                foreach (['course' => $user->course, 'job_title' => $user->job_title, 'employment_link' => $user->employment_link] as $type => $value) {
+                    if ($value !== null) {
+                        $query->orWhere(fn ($option) => $option->where('type', $type)->where('value', $value));
+                    }
+                }
+            });
+        })->get()->groupBy('type');
+        $emailDomain = strtolower($emailParts[1] ?? '');
+
         return view('users.edit', [
             'user' => $user,
-            'options' => UserProfileOption::query()->where('active', true)->get()->groupBy('type'),
+            'options' => $options,
+            'domains' => EmailDomain::query()->where('active', true)->orWhere('domain', $emailDomain)->orderBy('domain')->get(),
+            'emailLocal' => $emailParts[0],
+            'emailDomain' => $emailDomain,
         ]);
     }
 
     public function update(Request $request, User $user): RedirectResponse
     {
+        $emailParts = explode('@', $user->email, 2);
+        $currentDomain = strtolower($emailParts[1] ?? '');
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'email' => ['nullable', 'required_without:email_local', 'prohibited_with:email_local', 'email', 'max:255'],
+            'email_local' => ['nullable', 'required_without:email', 'string', 'max:64', 'regex:/^[a-zA-Z0-9.!#$%&\'*+\\/=?^_`{|}~-]+$/'],
+            'email_domain' => [
+                'required_with:email_local',
+                'nullable',
+                'string',
+                Rule::exists('email_domains', 'domain')->where(fn ($query) => $query
+                    ->where('active', true)->orWhere('domain', $currentDomain)),
+            ],
             'functional_id' => ['required', 'string', 'max:100', Rule::unique('users', 'functional_id')->ignore($user->id)],
             'phone' => ['required', 'string', 'max:30'],
-            'course' => [Rule::requiredIf($user->profile === 'aluno'), 'nullable', Rule::exists('user_profile_options', 'value')->where(fn ($query) => $query->where('type', 'course')->where('active', true))],
-            'job_title' => [Rule::requiredIf(in_array($user->profile, ['professor', 'tecnico'], true)), 'nullable', Rule::exists('user_profile_options', 'value')->where(fn ($query) => $query->where('type', 'job_title')->where('active', true))],
-            'employment_link' => [Rule::requiredIf(in_array($user->profile, ['professor', 'tecnico'], true)), 'nullable', Rule::exists('user_profile_options', 'value')->where(fn ($query) => $query->where('type', 'employment_link')->where('active', true))],
+            'course' => [Rule::requiredIf($user->profile === 'aluno'), 'nullable', Rule::exists('user_profile_options', 'value')->where(fn ($query) => $query->where('type', 'course')->where(fn ($query) => $query->where('active', true)->orWhere('value', $user->course)))],
+            'job_title' => [Rule::requiredIf(in_array($user->profile, ['professor', 'tecnico'], true)), 'nullable', Rule::exists('user_profile_options', 'value')->where(fn ($query) => $query->where('type', 'job_title')->where(fn ($query) => $query->where('active', true)->orWhere('value', $user->job_title)))],
+            'employment_link' => [Rule::requiredIf(in_array($user->profile, ['professor', 'tecnico'], true)), 'nullable', Rule::exists('user_profile_options', 'value')->where(fn ($query) => $query->where('type', 'employment_link')->where(fn ($query) => $query->where('active', true)->orWhere('value', $user->employment_link)))],
         ]);
+
+        if (isset($validated['email_local'])) {
+            $validated['email'] = $validated['email_local'].'@'.$validated['email_domain'];
+        }
+        unset($validated['email_local'], $validated['email_domain']);
+        $validated['email'] = strtolower($validated['email']);
+        if (! filter_var($validated['email'], FILTER_VALIDATE_EMAIL)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'email_local' => 'Informe uma parte local válida para o endereço de e-mail.',
+            ]);
+        }
+        if (strtolower($validated['email']) === strtolower($user->email)) {
+            $validated['email'] = $user->email;
+        }
+        if (User::query()->whereRaw('LOWER(email) = ?', [$validated['email']])->where('id', '!=', $user->id)->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'email' => 'Este endereço de e-mail já está cadastrado.',
+            ]);
+        }
 
         if ($validated['email'] !== $user->email) {
             $domain = strtolower(substr(strrchr($validated['email'], '@'), 1));

@@ -30,17 +30,23 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        foreach (config('users.allowed_email_domains', []) as $domain) {
-            \App\Models\EmailDomain::query()->firstOrCreate(['domain' => $domain], ['active' => true]);
+        $emailDomains = array_values(config('users.allowed_email_domains', []));
+        foreach ($emailDomains as $index => $domain) {
+            \App\Models\EmailDomain::query()->firstOrCreate(
+                ['domain' => $domain],
+                ['active' => true, 'is_default' => $index === 0],
+            );
+        }
+        if (! \App\Models\EmailDomain::query()->where('is_default', true)->exists()) {
+            $defaultDomain = $emailDomains[0] ?? null;
+            if ($defaultDomain) {
+                \App\Models\EmailDomain::query()->where('domain', $defaultDomain)->update(['is_default' => true]);
+            }
         }
 
-        foreach ([
-            ['type' => 'course', 'value' => 'OUTRO'],
-            ['type' => 'job_title', 'value' => 'OUTRO'],
+        \App\Models\UserProfileOption::query()->firstOrCreate(
             ['type' => 'job_title', 'value' => config('users.professor_job_title')],
-            ['type' => 'employment_link', 'value' => 'OUTRO'],
-        ] as $option) {
-            \App\Models\UserProfileOption::query()->firstOrCreate($option, ['active' => true]);
-        }
+            ['active' => true],
+        );
     }
 }

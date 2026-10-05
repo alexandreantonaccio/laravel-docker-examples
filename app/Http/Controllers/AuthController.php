@@ -67,6 +67,7 @@ class AuthController extends Controller
     {
         return view('auth.register', [
             'options' => UserProfileOption::query()->where('active', true)->get()->groupBy('type'),
+            'domains' => EmailDomain::query()->where('active', true)->orderBy('domain')->get(),
         ]);
     }
 
@@ -83,7 +84,14 @@ class AuthController extends Controller
         $profile = $request->input('profile');
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['nullable', 'required_without:email_local', 'prohibited_with:email_local', 'string', 'email', 'max:255'],
+            'email_local' => ['nullable', 'required_without:email', 'string', 'max:64', 'regex:/^[a-zA-Z0-9.!#$%&\'*+\\/=?^_`{|}~-]+$/'],
+            'email_domain' => [
+                'required_with:email_local',
+                'nullable',
+                'string',
+                Rule::exists('email_domains', 'domain')->where(fn ($query) => $query->where('active', true)),
+            ],
             'functional_id' => ['required', 'string', 'max:100', 'unique:users,functional_id'],
             'phone' => ['required', 'string', 'max:30'],
             'profile' => ['required', Rule::in(config('users.profiles'))],
@@ -93,6 +101,22 @@ class AuthController extends Controller
             'enrollment_proof' => [Rule::requiredIf($profile === 'aluno'), 'nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:1024'],
             'password' => ['required', 'confirmed', 'min:8', 'regex:/^(?=.*[A-Za-z])(?=.*\d).+$/'],
         ]);
+
+        if (isset($validated['email_local'])) {
+            $validated['email'] = $validated['email_local'].'@'.$validated['email_domain'];
+        }
+        unset($validated['email_local'], $validated['email_domain']);
+        $validated['email'] = Str::lower($validated['email']);
+        if (! filter_var($validated['email'], FILTER_VALIDATE_EMAIL)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'email_local' => 'Informe uma parte local válida para o endereço de e-mail.',
+            ]);
+        }
+        if (User::query()->whereRaw('LOWER(email) = ?', [$validated['email']])->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'email' => 'Este endereço de e-mail já está cadastrado.',
+            ]);
+        }
 
         $domain = Str::lower(Str::afterLast($validated['email'], '@'));
         $allowed = EmailDomain::query()->exists()

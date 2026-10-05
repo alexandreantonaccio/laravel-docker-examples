@@ -130,6 +130,17 @@ td { font-size: .93rem; }
 .checkbox-label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .87rem; }
 .auth-footer { margin: 28px 0 0; color: var(--muted); font-size: .9rem; text-align: center; }
 .auth-footer a { color: var(--accent-dark); font-weight: 700; }
+.email-composer { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(150px, .8fr); align-items: center; gap: 8px; }
+.email-composer input, .email-composer select { width: 100%; min-width: 0; height: 46px; padding: 0 12px; border: 1px solid #cbd5d0; border-radius: 4px; background: #fbfcf9; font: inherit; }
+.booking-color { display: inline-block; width: 14px; height: 14px; margin-right: 8px; border-radius: 3px; background: var(--booking-color); vertical-align: -2px; }
+.table-section-heading { padding: 24px 22px 10px; font-size: 1.1rem; }
+.inline-reject, .cancel-form { display: flex; align-items: end; flex-wrap: wrap; gap: 10px; }
+.inline-reject .field { width: min(280px, 100%); }
+.cancel-form input, .cancel-form select, .compact-input { min-height: 40px; max-width: 190px; padding: 7px 10px; border: 1px solid #cbd5d0; border-radius: 4px; font: inherit; }
+.weekdays { display: flex; flex-wrap: wrap; gap: 12px 20px; border: 1px solid var(--line); padding: 16px; }
+.weekdays legend { padding: 0 6px; font-weight: 700; }
+.range-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.range-row input { width: min(180px, 40%); min-height: 42px; padding: 8px; border: 1px solid #cbd5d0; border-radius: 4px; }
 
 @media (max-width: 680px) {
     .topbar { min-height: 64px; padding: 0 20px; }
