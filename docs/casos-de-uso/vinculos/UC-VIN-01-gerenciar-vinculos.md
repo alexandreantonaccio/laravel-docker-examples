@@ -25,9 +25,9 @@ de vínculos **ativos**, sem digitação livre. Quando não encontrar o seu
 vínculo, seleciona a opção **"OUTRO"** (um vínculo cadastrado como
 qualquer outro).
 
-> **Sem inicialização automática:** a tabela de vínculos **não** é
-> populada na instalação do sistema. Os vínculos (incluindo o registro
-> "OUTRO") são cadastrados manualmente pelo Administrador quando o
+> **Inicialização:** o registro "OUTRO" é criado ativo na instalação para
+> permitir o cadastro de Professores e Técnicos antes da configuração dos
+> vínculos. Os demais vínculos são cadastrados pelo Administrador quando o
 > sistema estiver em operação (**RN07**).
 
 > **Desacoplamento (consistente com Cargos, Cursos e Domínios):** ao
@@ -82,5 +82,5 @@ qualquer outro).
 - **RN04 - Efeito Imediato:** Alterações na lista (criação, edição, ativação/desativação) refletem imediatamente na lista de vínculos disponíveis nos fluxos de cadastro/edição.
 - **RN05 - Filtro e Contagem de Uso:** A listagem permite filtrar por status (todos / ativos / desativados) e exibe, para cada vínculo, a quantidade de usuários que o utilizam. A contagem é obtida por correspondência textual do nome do vínculo nos usuários, sem relação (FK) entre as tabelas — ver RN06.
 - **RN06 - Sem Relação (FK) entre Usuário e Registro de Vínculo:** No cadastro/edição, o sistema grava no usuário o texto do vínculo escolhido, sem chave estrangeira para o registro correspondente na lista de vínculos. Editar ou desativar um vínculo da lista não afeta o vínculo já salvo em usuários cadastrados.
-- **RN07 - Sem Inicialização Automática:** A tabela de vínculos não é populada na instalação. Os vínculos, incluindo o registro **"OUTRO"** usado como opção de fallback no cadastro de Técnico/Professor (UC-USR-01, RN14), são cadastrados manualmente pelo Administrador. Enquanto não houver vínculos ativos (ou o "OUTRO"), o cadastro de Técnico/Professor depende desse cadastro prévio.
+- **RN07 - Inicialização da Opção de Fallback:** O registro **"OUTRO"** é criado ativo na inicialização para uso como opção de fallback no cadastro de Técnico/Professor (UC-USR-01, RN14). Os demais vínculos são cadastrados pelo Administrador.
 - **RN08 - Leitura no Cadastro não é Permissão Administrativa:** A exibição da lista de vínculos ativos no cadastro/edição de usuário faz parte desses fluxos e não exige do usuário as permissões `vinculos.*` (que são para a gestão administrativa de vínculos).

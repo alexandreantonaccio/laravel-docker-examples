@@ -20,10 +20,10 @@
 - **Atores Secundários:** Serviço de E-mail
 - **Pré-condições:**
   - Os domínios de e-mail institucionais devem estar previamente cadastrados na tabela de domínios permitidos do sistema (ex: `@ufam.edu.br`).
-  - Para o perfil **Aluno**: os cursos devem estar previamente cadastrados no módulo de Cursos (incluindo a opção "OUTRO").
+  - Para o perfil **Aluno**: o módulo de Cursos inicializa a opção "OUTRO"; os demais cursos podem ser cadastrados administrativamente.
   - Para o perfil **Professor**: o cargo "Professor do Magistério Superior" já vem cadastrado na inicialização do sistema (UC-CAR-01, RN07) — não depende de cadastro prévio manual.
-  - Para o perfil **Técnico**: um cargo (módulo Cargos) deve estar previamente cadastrado.
-  - Para os perfis **Técnico** e **Professor**: um vínculo (módulo Vínculos, incluindo a opção "OUTRO") deve estar previamente cadastrado — o módulo de Vínculos não tem inicialização automática (UC-VIN-01, RN07).
+  - Para o perfil **Técnico**: a opção "OUTRO" é inicializada no módulo Cargos; os demais cargos podem ser cadastrados administrativamente.
+  - Para os perfis **Técnico** e **Professor**: o módulo Vínculos inicializa a opção "OUTRO"; os demais vínculos podem ser cadastrados administrativamente.
 - **Pós-condições:** Cadastro gravado com status **"Pendente de Confirmação de E-mail"** e e-mail de confirmação disparado. A verificação do e-mail e a liberação de acesso ocorrem em UCs subsequentes (UC-USR-02, UC-USR-03).
 
 ---
@@ -109,5 +109,5 @@
 - **RN10 - Indicador de Progresso de Preenchimento:** Durante o preenchimento, o sistema indica em tempo real quais campos obrigatórios já foram concluídos e quais estão pendentes, conforme o perfil.
 - **RN11 - Força de Senha:** A senha deve ter no mínimo 8 caracteres, contendo ao menos uma letra e um número. A confirmação de senha deve coincidir com a senha.
 - **RN12 - Expiração de Cadastro Não Confirmado:** Um cadastro que permaneça no status "Pendente de Confirmação de E-mail" por mais de 24 horas é considerado expirado e removido, liberando a identificação funcional e o e-mail para novo cadastro.
-- **RN13 - Cargo (perfis Técnico e Professor):** O cargo é exigido para Técnico e Professor e é selecionado da lista do módulo de Cargos (UC-CAR-01). Para o perfil **Professor**, o cargo é preenchido automaticamente como **"Professor do Magistério Superior"** e não é editável pelo próprio usuário no cadastro. O cargo é salvo no usuário como texto (cópia), sem chave estrangeira para o registro do cargo (RN06 do UC-CAR-01). Um Administrador pode posteriormente alterar o cargo salvo neste usuário específico (UC-USR-11) — o que é distinto de editar o nome do cargo na lista (UC-CAR-01), que não afeta usuários já cadastrados. O perfil Aluno não possui cargo.
+- **RN13 - Cargo (perfis Técnico e Professor):** O cargo é exigido para Técnico e Professor e é selecionado da lista do módulo de Cargos (UC-CAR-01). Para o perfil **Técnico**, quando não encontrar seu cargo, o usuário pode selecionar **"OUTRO"**, disponível desde a inicialização. Para o perfil **Professor**, o cargo é preenchido automaticamente como **"Professor do Magistério Superior"** e não é editável pelo próprio usuário no cadastro. O cargo é salvo no usuário como texto (cópia), sem chave estrangeira para o registro do cargo (RN06 do UC-CAR-01). Um Administrador pode posteriormente alterar o cargo salvo neste usuário específico (UC-USR-11) — o que é distinto de editar o nome do cargo na lista (UC-CAR-01), que não afeta usuários já cadastrados. O perfil Aluno não possui cargo.
 - **RN14 - Vínculo (perfis Técnico e Professor):** O vínculo é exigido para Técnico e Professor e é sempre selecionado da lista do módulo de Vínculos (UC-VIN-01), sem digitação livre. Quando o usuário não encontrar o seu vínculo, seleciona a opção **"OUTRO"** (um vínculo cadastrado como qualquer outro). O vínculo é salvo no usuário como texto (cópia), sem chave estrangeira para o registro na lista de vínculos (RN06 do UC-VIN-01) — editar/desativar um vínculo da lista não afeta usuários já cadastrados. O perfil Aluno não possui vínculo.

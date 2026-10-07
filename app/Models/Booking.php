@@ -10,7 +10,8 @@ class Booking extends Model
     protected $fillable = [
         'requester_user_id', 'teacher_id', 'environment_id', 'booking_type_id',
         'booking_series_id', 'reason', 'booking_date', 'starts_at', 'ends_at',
-        'status', 'decision_reason', 'cancellation_reason',
+        'status', 'decision_reason', 'cancellation_reason', 'teacher_other',
+        'environment_other', 'booking_type_other',
     ];
 
     protected function casts(): array

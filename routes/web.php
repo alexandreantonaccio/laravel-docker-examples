@@ -6,6 +6,8 @@ use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\PermissionGroupController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\EnvironmentController;
+use App\Http\Controllers\MaterialController;
+use App\Http\Controllers\MaterialRentalController;
 use App\Http\Controllers\SupportCatalogController;
 use App\Http\Controllers\UserAdministrationController;
 use App\Models\User;
@@ -147,6 +149,42 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:grupos_ambientes.editar')->name('environment-groups.update');
     Route::patch('/environment-groups/{environmentGroup}/toggle', [EnvironmentController::class, 'toggleGroup'])
         ->middleware('permission:grupos_ambientes.desativar')->name('environment-groups.toggle');
+
+    Route::get('/materiais', [MaterialController::class, 'index'])->name('materials.index');
+    Route::get('/materiais/create', [MaterialController::class, 'create'])
+        ->middleware('permission:materiais.criar')->name('materials.create');
+    Route::post('/materiais', [MaterialController::class, 'store'])
+        ->middleware('permission:materiais.criar')->name('materials.store');
+    Route::get('/materiais/{material}/edit', [MaterialController::class, 'edit'])
+        ->middleware('permission:materiais.editar')->name('materials.edit');
+    Route::put('/materiais/{material}', [MaterialController::class, 'update'])
+        ->middleware('permission:materiais.editar')->name('materials.update');
+    Route::patch('/materiais/{material}/toggle', [MaterialController::class, 'toggle'])
+        ->middleware('permission:materiais.desativar')->name('materials.toggle');
+
+    Route::get('/grupos-materiais', [MaterialController::class, 'groups'])
+        ->middleware('permission:grupos_materiais.listar')->name('material-groups.index');
+    Route::get('/grupos-materiais/create', [MaterialController::class, 'createGroup'])
+        ->middleware('permission:grupos_materiais.criar')->name('material-groups.create');
+    Route::post('/grupos-materiais', [MaterialController::class, 'storeGroup'])
+        ->middleware('permission:grupos_materiais.criar')->name('material-groups.store');
+    Route::get('/grupos-materiais/{materialGroup}/edit', [MaterialController::class, 'editGroup'])
+        ->middleware('permission:grupos_materiais.editar')->name('material-groups.edit');
+    Route::put('/grupos-materiais/{materialGroup}', [MaterialController::class, 'updateGroup'])
+        ->middleware('permission:grupos_materiais.editar')->name('material-groups.update');
+    Route::patch('/grupos-materiais/{materialGroup}/toggle', [MaterialController::class, 'toggleGroup'])
+        ->middleware('permission:grupos_materiais.desativar')->name('material-groups.toggle');
+
+    Route::get('/materiais/alugar', [MaterialRentalController::class, 'create'])->name('material-rentals.create');
+    Route::post('/materiais/alugar', [MaterialRentalController::class, 'store'])->name('material-rentals.store');
+    Route::get('/materiais/pedidos', [MaterialRentalController::class, 'index'])->name('material-rentals.index');
+    Route::get('/materiais/pedidos/{materialRental}', [MaterialRentalController::class, 'show'])->name('material-rentals.show');
+    Route::post('/materiais/pedidos/{materialRental}/approve', [MaterialRentalController::class, 'approve'])
+        ->middleware('permission:materiais_alugueis.aprovar')->name('material-rentals.approve');
+    Route::post('/materiais/pedidos/{materialRental}/reject', [MaterialRentalController::class, 'reject'])
+        ->middleware('permission:materiais_alugueis.aprovar')->name('material-rentals.reject');
+    Route::post('/materiais/pedidos/{materialRental}/cancel', [MaterialRentalController::class, 'cancel'])
+        ->name('material-rentals.cancel');
 
     Route::get('/agenda', [BookingController::class, 'calendar'])->name('bookings.calendar');
     Route::get('/agenda/solicitacoes', [BookingController::class, 'adminIndex'])

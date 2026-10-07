@@ -48,5 +48,12 @@ class DatabaseSeeder extends Seeder
             ['type' => 'job_title', 'value' => config('users.professor_job_title')],
             ['active' => true],
         );
+
+        foreach (['course', 'job_title', 'employment_link'] as $type) {
+            \App\Models\UserProfileOption::query()->firstOrCreate(
+                ['type' => $type, 'value' => 'OUTRO'],
+                ['active' => true],
+            );
+        }
     }
 }

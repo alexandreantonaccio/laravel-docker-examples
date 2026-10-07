@@ -5,6 +5,7 @@ use App\Models\PermissionGroup;
 use App\Models\User;
 use App\Models\UserProfileOption;
 use App\Notifications\VerifyUserEmail;
+use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,6 +29,56 @@ function grantPermission(User $user, string $key): void
         ['effect' => 'grant'],
     );
 }
+
+test('default OUTRO options allow registration when no catalogs have been configured', function () {
+    Notification::fake();
+    Storage::fake();
+    $this->seed(DatabaseSeeder::class);
+
+    foreach (['course', 'job_title', 'employment_link'] as $type) {
+        $this->assertDatabaseHas('user_profile_options', [
+            'type' => $type,
+            'value' => 'OUTRO',
+            'active' => true,
+        ]);
+    }
+
+    $this->get(route('register'))->assertOk()->assertSee('value="OUTRO"', false);
+
+    $this->post(route('register.store'), [
+        'profile' => 'aluno',
+        'functional_id' => '20260010',
+        'name' => 'Ana Silva',
+        'email' => 'ana.outro@ufam.edu.br',
+        'phone' => '92999990000',
+        'course' => 'OUTRO',
+        'enrollment_proof' => UploadedFile::fake()->create('matricula.pdf', 80, 'application/pdf'),
+        'password' => 'secret123',
+        'password_confirmation' => 'secret123',
+    ])->assertRedirectToRoute('login');
+
+    $this->post(route('register.store'), [
+        'profile' => 'tecnico',
+        'functional_id' => '20260011',
+        'name' => 'Bruno Costa',
+        'email' => 'bruno.outro@ufam.edu.br',
+        'phone' => '92999990000',
+        'job_title' => 'OUTRO',
+        'employment_link' => 'OUTRO',
+        'password' => 'secret123',
+        'password_confirmation' => 'secret123',
+    ])->assertRedirectToRoute('login');
+
+    $this->assertDatabaseHas('users', [
+        'functional_id' => '20260010',
+        'course' => 'OUTRO',
+    ]);
+    $this->assertDatabaseHas('users', [
+        'functional_id' => '20260011',
+        'job_title' => 'OUTRO',
+        'employment_link' => 'OUTRO',
+    ]);
+});
 
 test('registration creates a pending account and sends a confirmation link', function () {
     Notification::fake();

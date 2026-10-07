@@ -35,6 +35,8 @@ class PermissionSeeder extends Seeder
             'vinculos' => ['visualizar', 'listar', 'criar', 'editar', 'desativar'],
             'ambientes' => ['visualizar', 'listar', 'criar', 'editar', 'desativar'],
             'grupos_ambientes' => ['visualizar', 'listar', 'criar', 'editar', 'desativar'],
+            'materiais' => ['listar', 'criar', 'editar', 'desativar'],
+            'grupos_materiais' => ['listar', 'criar', 'editar', 'desativar'],
             'agendamentos.tipo' => ['criar', 'editar', 'desativar'],
             'agendamentos.docente' => ['criar', 'editar', 'desativar'],
         ] as $resource => $actions) {
@@ -57,6 +59,9 @@ class PermissionSeeder extends Seeder
             'agendamentos.cancelar.qualquer' => 'Cancelar qualquer agendamento',
             'agendamentos.aprovar.qualquer' => 'Aprovar ou rejeitar agendamentos',
             'agendamentos.configurar' => 'Configurar regras de agendamento',
+            'materiais_alugueis.listar.qualquer' => 'Listar todos os pedidos de aluguel de materiais',
+            'materiais_alugueis.aprovar' => 'Aprovar ou rejeitar pedidos de aluguel de materiais',
+            'materiais_alugueis.cancelar.qualquer' => 'Cancelar qualquer pedido de aluguel de materiais',
         ];
 
         foreach ($permissions as $key => $label) {

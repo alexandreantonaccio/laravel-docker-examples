@@ -7,11 +7,13 @@ use Illuminate\Support\Facades\DB;
 
 class BookingAvailability
 {
-    public function reason(int $environmentId, string $date, string $startsAt, string $endsAt, int|array|null $ignoreBookingIds = null): ?string
+    public function reason(?int $environmentId, string $date, string $startsAt, string $endsAt, int|array|null $ignoreBookingIds = null, ?string $environmentOther = null): ?string
     {
         $weekday = (int) date('w', strtotime($date));
-        $rules = DB::table('booking_rules')->where('environment_id', $environmentId)->first()
-            ?? DB::table('booking_rules')->whereNull('environment_id')->first();
+        $rules = $environmentId
+            ? DB::table('booking_rules')->where('environment_id', $environmentId)->first()
+            : null;
+        $rules ??= DB::table('booking_rules')->whereNull('environment_id')->first();
         if (! $rules) {
             return 'As regras de agendamento ainda não foram configuradas.';
         }
@@ -38,7 +40,9 @@ class BookingAvailability
             }
         }
 
-        $conflict = Booking::query()->where('environment_id', $environmentId)
+        $conflict = Booking::query()
+            ->where('environment_id', $environmentId)
+            ->when($environmentId === null, fn ($query) => $query->where('environment_other', $environmentOther))
             ->whereDate('booking_date', $date)->where('status', 'approved')
             ->where('starts_at', '<', $endsAt)->where('ends_at', '>', $startsAt)
             ->when(is_int($ignoreBookingIds), fn ($query) => $query->where('id', '!=', $ignoreBookingIds))

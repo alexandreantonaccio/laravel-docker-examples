@@ -2,8 +2,9 @@
     <div class="page-heading"><div><div class="eyebrow">Agenda</div><h1>Detalhes do agendamento</h1></div><a class="button button-quiet" href="{{ route('bookings.calendar') }}">Voltar à agenda</a></div>
     <section class="detail-card">
         <div class="detail-row"><span>Solicitante</span><strong>{{ $booking->requester?->name ?? $booking->teacher?->name ?? '—' }}</strong></div>
-        <div class="detail-row"><span>Ambiente</span><strong>{{ $booking->environment->name }}</strong></div>
-        <div class="detail-row"><span>Tipo</span><strong>{{ $booking->type->name }}</strong></div>
+        <div class="detail-row"><span>Docente responsável</span><strong>{{ $booking->teacher?->name ?? $booking->teacher_other ?? '—' }}</strong></div>
+        <div class="detail-row"><span>Ambiente</span><strong>{{ $booking->environment?->name ?? $booking->environment_other }}</strong></div>
+        <div class="detail-row"><span>Tipo</span><strong>{{ $booking->type?->name ?? $booking->booking_type_other }}</strong></div>
         <div class="detail-row"><span>Motivo</span><strong>{{ $booking->reason }}</strong></div>
         <div class="detail-row"><span>Data e horário</span><strong>{{ $booking->booking_date->format('d/m/Y') }} · {{ substr($booking->starts_at,0,5) }}–{{ substr($booking->ends_at,0,5) }}</strong></div>
         <div class="detail-row"><span>Status</span><strong>{{ ucfirst($booking->status) }}</strong></div>

@@ -16,8 +16,8 @@ de uso além dos módulos de usuários e grupos de permissões.
    - Ampliado o `PermissionSeeder` com permissões dos catálogos e de cada ação
      de agendamento.
    - Mantida a criação configurada do domínio institucional padrão e do cargo
-     de Professor. Cursos e vínculos (inclusive `OUTRO`) ficam para cadastro
-     administrativo, conforme as regras documentadas.
+     de Professor. A opção `OUTRO` é criada para cursos, cargos e vínculos;
+     as demais opções dos catálogos ficam para cadastro administrativo.
 
 3. **Cadastros de apoio**
    - Adicionada gestão de cursos, cargos e vínculos com filtros por status,
@@ -75,6 +75,21 @@ de uso além dos módulos de usuários e grupos de permissões.
    - Incluídos atalhos para os módulos na navegação e na página inicial.
    - Rotas de escrita e gestão são protegidas pelas permissões correspondentes;
      a agenda geral e o detalhe permanecem disponíveis a usuários autenticados.
+
+9. **Materiais e pedidos de aluguel**
+   - Adicionados cadastro de materiais com código, estoque quantitativo,
+     descrição e grupo, além de ativação/desativação sem exclusão.
+   - Adicionada gestão de grupos de materiais com destinatários de notificação.
+     Ao desativar um grupo, os materiais são mantidos no catálogo sem grupo,
+     seguindo o comportamento dos grupos de ambientes.
+   - Usuários autenticados podem solicitar uma quantidade para um período;
+     pedidos pendentes e aprovados reservam estoque em períodos sobrepostos.
+     A solicitação e a aprovação conferem disponibilidade sob bloqueio do
+     registro do material para impedir reservas concorrentes acima do estoque.
+   - Pedidos podem ser aprovados/rejeitados por usuários autorizados e
+     cancelados pelo solicitante ou por usuário com permissão administrativa.
+     Notificações são enviadas ao solicitante e aos e-mails do grupo, quando
+     configurados.
 
 ## Executar e validar
 

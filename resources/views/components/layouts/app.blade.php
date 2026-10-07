@@ -32,6 +32,7 @@
                 @if (auth()->user()->hasPermissionTo('grupos_ambientes.listar'))
                     <a class="text-link" href="{{ route('environment-groups.index') }}">Grupos de ambientes</a>
                 @endif
+                <a class="text-link" href="{{ route('materials.index') }}">Materiais</a>
                 <span class="user-label">{{ auth()->user()->name }}</span>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

@@ -21,7 +21,8 @@
 
 Cargos são usados no cadastro dos perfis **Técnico** e **Professor**
 (UC-USR-01, RN13). No cadastro, o usuário seleciona o cargo de uma lista
-de cargos **ativos**. Para o perfil **Professor**, o cargo é
+de cargos **ativos**; o perfil Técnico pode selecionar **"OUTRO"** quando
+não encontrar seu cargo. Para o perfil **Professor**, o cargo é
 pré-preenchido automaticamente como **"Professor do Magistério Superior"**.
 
 > **Desacoplamento (consistente com Domínios de E-mail):** ao salvar o
@@ -31,8 +32,9 @@ pré-preenchido automaticamente como **"Professor do Magistério Superior"**.
 > já cadastrados (ver **RN06**).
 
 O sistema já nasce (na inicialização) com o cargo **"Professor do
-Magistério Superior"** cadastrado e ativo, pois o cadastro de Professor
-depende dele (**RN07**).
+Magistério Superior"** e a opção **"OUTRO"** cadastrados e ativos. O cargo
+de Professor é necessário ao cadastro desse perfil; **"OUTRO"** permite o
+cadastro de Técnico antes da configuração dos demais cargos (**RN07**).
 
 ---
 
@@ -80,5 +82,5 @@ depende dele (**RN07**).
 - **RN04 - Efeito Imediato:** Alterações na lista (criação, edição, ativação/desativação) refletem imediatamente na lista de cargos disponíveis nos fluxos de cadastro/edição.
 - **RN05 - Filtro e Contagem de Uso:** A listagem permite filtrar por status (todos / ativos / desativados) e exibe, para cada cargo, a quantidade de usuários que o utilizam. A contagem é obtida por correspondência textual do cargo nos usuários (não há vínculo relacional — ver RN06).
 - **RN06 - Cargo Desacoplado do Usuário (cópia de texto):** No cadastro/edição, o sistema grava no usuário o texto do cargo escolhido, sem chave estrangeira para o registro do cargo. Editar ou desativar um cargo não afeta o cargo de usuários já cadastrados.
-- **RN07 - Cargo de Inicialização (Professor):** O sistema é inicializado com o cargo "Professor do Magistério Superior" ativo, pois o cadastro do perfil Professor o atribui automaticamente (UC-USR-01, RN13).
+- **RN07 - Cargos de Inicialização:** O sistema é inicializado com os cargos "Professor do Magistério Superior" e **"OUTRO"** ativos. O primeiro é atribuído automaticamente ao perfil Professor; **"OUTRO"** fica disponível como fallback no cadastro do perfil Técnico (UC-USR-01, RN13).
 - **RN08 - Leitura no Cadastro não é Permissão Administrativa:** A exibição da lista de cargos ativos no cadastro/edição de usuário faz parte desses fluxos e não exige do usuário as permissões `cargos.*` (que são para a gestão administrativa de cargos).

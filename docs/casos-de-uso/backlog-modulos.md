@@ -89,8 +89,8 @@ escritos e novos módulos forem identificados.
 - Dependências entre módulos devem ser explicitadas na seção de Metadados de cada UC.
 - `UC-USR-01` (Cadastro e Aprovação de Usuário) possui as seguintes dependências pendentes, a resolver ao iniciar os respectivos módulos:
   - **Domínios de e-mail:** ✅ resolvido — validação de domínio documentada em UC-DOM-01.
-  - **Cursos:** ✅ resolvido — gestão de cursos documentada em UC-CUR-01 (inclui "OUTRO" e caixa alta; sem inicialização automática).
+  - **Cursos:** ✅ resolvido — gestão de cursos documentada em UC-CUR-01 (inclui "OUTRO" inicializado e caixa alta).
   - **Perfis de usuário:** ✅ resolvido — enum fixo no código, sem módulo/UC de gerenciamento (ADR-002 em `decisoes-tecnicas.md`).
   - **Cargos:** ✅ resolvido — gestão de cargos documentada em UC-CAR-01.
-  - **Vínculos:** ✅ resolvido — gestão de vínculos documentada em UC-VIN-01 (inclui "OUTRO"; sem inicialização automática).
+  - **Vínculos:** ✅ resolvido — gestão de vínculos documentada em UC-VIN-01 (inclui "OUTRO" inicializado).
   - **Grupos de permissões:** modelo definido (grupos + ajuste individual com adição/negação) em `docs/referencias/permissoes-sistema.md`; UCs em UC-GRP-01/02 e UC-USR-08. Na aprovação (UC-USR-03), o Administrador associa o usuário aos grupos.

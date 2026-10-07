@@ -13,7 +13,7 @@
             <div class="table-wrap"><table><thead><tr><th>Solicitante</th><th>Ambiente</th><th>Tipo</th><th>Data</th><th>Horário</th><th>Status</th><th></th></tr></thead><tbody>
             @php($rows = $bookings->getCollection()->filter(fn($booking)=>(bool)$booking->booking_series_id === (bool)$series))
             @forelse($rows as $booking)<tr>
-                <td>{{ $booking->requester?->name ?? $booking->teacher?->name ?? '—' }}</td><td>{{ $booking->environment->name }}</td><td>{{ $booking->type->name }}</td>
+                <td>{{ $booking->requester?->name ?? $booking->teacher?->name ?? $booking->teacher_other ?? '—' }}</td><td>{{ $booking->environment?->name ?? $booking->environment_other }}</td><td>{{ $booking->type?->name ?? $booking->booking_type_other }}</td>
                 <td>{{ $booking->booking_date->format('d/m/Y') }}</td><td>{{ substr($booking->starts_at,0,5) }}–{{ substr($booking->ends_at,0,5) }}</td><td>{{ ucfirst($booking->status) }}</td><td><a class="text-link" href="{{ route('bookings.show',$booking) }}">Detalhes</a></td>
             </tr>@empty<tr><td colspan="7" class="empty-state">Nenhum registro nesta seção.</td></tr>@endforelse
             </tbody></table></div>

@@ -63,23 +63,24 @@ class BookingController extends Controller
     public function store(Request $request, BookingAvailability $availability): RedirectResponse
     {
         $canRequestForOthers = $request->user()->hasPermissionTo('agendamentos.solicitar.qualquer');
-        $data = $request->validate([
+        $data = $this->validateBooking($request);
+        $requesterData = $request->validate([
             'requester_user_id' => [
                 $canRequestForOthers ? 'required' : 'nullable',
                 'integer',
                 Rule::exists('users', 'id')->where('is_active', true),
             ],
-            'environment_id' => ['required', 'integer', Rule::exists('environments', 'id')->where('active', true)],
-            'booking_type_id' => ['required', 'integer', Rule::exists('booking_types', 'id')->where('active', true)],
-            'reason' => ['required', 'string', 'max:5000'],
-            'booking_date' => ['required', 'date', 'after_or_equal:today'],
-            'starts_at' => ['required', 'date_format:H:i'],
-            'ends_at' => ['required', 'date_format:H:i', 'after:starts_at'],
         ]);
         $data['requester_user_id'] = $canRequestForOthers
-            ? $data['requester_user_id']
+            ? ($requesterData['requester_user_id'] ?? null)
             : $request->user()->id;
-        $problem = $availability->reason($data['environment_id'], $data['booking_date'], $data['starts_at'], $data['ends_at']);
+        $problem = $availability->reason(
+            $data['environment_id'],
+            $data['booking_date'],
+            $data['starts_at'],
+            $data['ends_at'],
+            environmentOther: $data['environment_other'],
+        );
         if ($problem) {
             return back()->withErrors(['booking_date' => $problem])->withInput();
         }
@@ -92,7 +93,7 @@ class BookingController extends Controller
     public function approve(Booking $booking, BookingAvailability $availability): RedirectResponse
     {
         DB::transaction(function () use ($booking, $availability): void {
-            Environment::query()->lockForUpdate()->findOrFail($booking->environment_id);
+            $this->lockBookingEnvironment($booking->environment_id);
             $locked = Booking::query()->lockForUpdate()->findOrFail($booking->id);
             abort_unless($locked->status === 'pending', 409, 'A solicitação já foi decidida.');
             $problem = $availability->reason(
@@ -101,6 +102,7 @@ class BookingController extends Controller
                 $locked->starts_at,
                 $locked->ends_at,
                 $locked->id,
+                $locked->environment_other,
             );
             if ($problem) {
                 abort(422, $problem);
@@ -135,19 +137,12 @@ class BookingController extends Controller
     public function update(Request $request, Booking $booking, BookingAvailability $availability): RedirectResponse
     {
         abort_unless($this->canEdit($booking, $request->user()), 403);
-        $data = $request->validate([
-            'environment_id' => ['required', 'integer', Rule::exists('environments', 'id')->where('active', true)],
-            'booking_type_id' => ['required', 'integer', Rule::exists('booking_types', 'id')->where('active', true)],
-            'reason' => ['required', 'string', 'max:5000'],
-            'booking_date' => ['required', 'date', 'after_or_equal:today'],
-            'starts_at' => ['required', 'date_format:H:i'],
-            'ends_at' => ['required', 'date_format:H:i', 'after:starts_at'],
+        $data = $this->validateBooking($request);
+        $changeData = $request->validate([
             'change_reason' => ['required', 'string', 'max:2000'],
             'scope' => ['nullable', Rule::in(['one', 'following'])],
         ]);
-        $scope = $data['scope'] ?? 'one';
-        unset($data['change_reason']);
-        unset($data['scope']);
+        $scope = $changeData['scope'] ?? 'one';
         $targets = Booking::query()->whereKey($booking->id);
         if ($scope === 'following' && $booking->booking_series_id) {
             $targets = Booking::query()->where('booking_series_id', $booking->booking_series_id)
@@ -155,12 +150,19 @@ class BookingController extends Controller
         }
         $problem = null;
         DB::transaction(function () use ($targets, $scope, $data, $availability, &$problem): void {
-            Environment::query()->whereKey($data['environment_id'])->lockForUpdate()->firstOrFail();
+            $this->lockBookingEnvironment($data['environment_id']);
             $targetBookings = $targets->lockForUpdate()->get();
             $ignoredIds = $targetBookings->pluck('id')->all();
             foreach ($targetBookings as $index => $target) {
                 $date = $scope === 'one' ? $data['booking_date'] : ($index === 0 ? $data['booking_date'] : $target->booking_date->toDateString());
-                $problem = $availability->reason($data['environment_id'], $date, $data['starts_at'], $data['ends_at'], $ignoredIds);
+                $problem = $availability->reason(
+                    $data['environment_id'],
+                    $date,
+                    $data['starts_at'],
+                    $data['ends_at'],
+                    $ignoredIds,
+                    $data['environment_other'],
+                );
                 if ($problem) {
                     return;
                 }
@@ -416,10 +418,49 @@ class BookingController extends Controller
         ];
     }
 
+    private function validateBooking(Request $request): array
+    {
+        $data = $request->validate([
+            'teacher_id' => [Rule::when($request->input('teacher_id') === 'other', ['required', Rule::in(['other'])], ['nullable', 'integer', Rule::exists('teachers', 'id')->where('active', true)])],
+            'teacher_other' => ['required_if:teacher_id,other', 'nullable', 'string', 'max:255'],
+            'environment_id' => [Rule::when($request->input('environment_id') === 'other', ['required', Rule::in(['other'])], ['required', 'integer', Rule::exists('environments', 'id')->where('active', true)])],
+            'environment_other' => ['required_if:environment_id,other', 'nullable', 'string', 'max:255'],
+            'booking_type_id' => [Rule::when($request->input('booking_type_id') === 'other', ['required', Rule::in(['other'])], ['required', 'integer', Rule::exists('booking_types', 'id')->where('active', true)])],
+            'booking_type_other' => ['required_if:booking_type_id,other', 'nullable', 'string', 'max:255'],
+            'reason' => ['required', 'string', 'max:5000'],
+            'booking_date' => ['required', 'date', 'after_or_equal:today'],
+            'starts_at' => ['required', 'date_format:H:i'],
+            'ends_at' => ['required', 'date_format:H:i', 'after:starts_at'],
+        ]);
+
+        foreach (['teacher', 'environment', 'booking_type'] as $field) {
+            $otherField = $field.'_other';
+            if (($data[$field.'_id'] ?? null) === 'other') {
+                $data[$field.'_id'] = null;
+                $data[$otherField] = trim($data[$otherField]);
+            } else {
+                $data[$otherField] = null;
+            }
+        }
+
+        return $data;
+    }
+
     private function canEdit(Booking $booking, User $user): bool
     {
         return $user->hasPermissionTo('agendamentos.editar.qualquer')
             || ((int) $booking->requester_user_id === (int) $user->id && $user->hasPermissionTo('agendamentos.editar.proprio'));
+    }
+
+    private function lockBookingEnvironment(?int $environmentId): void
+    {
+        if ($environmentId) {
+            Environment::query()->whereKey($environmentId)->lockForUpdate()->firstOrFail();
+
+            return;
+        }
+
+        DB::table('booking_rules')->whereNull('environment_id')->lockForUpdate()->firstOrFail();
     }
 
     private function validateSeries(Request $request): array

@@ -29,3 +29,17 @@ if (profileSelect) {
 	form.addEventListener('change', updateProfileFields);
 	updateProfileFields();
 }
+
+document.querySelectorAll('[data-other-select]').forEach((select) => {
+	const field = document.getElementById(select.dataset.otherSelect);
+	const input = field.querySelector('input');
+	const updateOtherField = () => {
+		const visible = select.value === 'other';
+		field.hidden = !visible;
+		input.disabled = !visible;
+		input.required = visible;
+	};
+
+	select.addEventListener('change', updateOtherField);
+	updateOtherField();
+});

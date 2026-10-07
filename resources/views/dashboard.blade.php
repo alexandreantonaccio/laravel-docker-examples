@@ -14,6 +14,9 @@
         <a class="button button-quiet" href="{{ route('bookings.calendar') }}">Agenda</a>
         @if(auth()->user()->hasPermissionTo('ambientes.listar'))<a class="button button-quiet" href="{{ route('environments.index') }}">Ambientes</a>@endif
         @if(auth()->user()->hasPermissionTo('grupos_ambientes.listar'))<a class="button button-quiet" href="{{ route('environment-groups.index') }}">Grupos de ambientes</a>@endif
+        <a class="button button-quiet" href="{{ route('materials.index') }}">Alugar materiais</a>
+        @if(auth()->user()->hasPermissionTo('materiais.criar'))<a class="button button-quiet" href="{{ route('materials.create') }}">Cadastrar materiais</a>@endif
+        @if(auth()->user()->hasPermissionTo('grupos_materiais.listar'))<a class="button button-quiet" href="{{ route('material-groups.index') }}">Grupos de materiais</a>@endif
         @if(auth()->user()->hasPermissionTo('dominios_email.listar'))<a class="button button-quiet" href="{{ route('domains.index') }}">Domínios de e-mail</a>@endif
         @foreach(['cursos'=>'cursos','cargos'=>'cargos','vinculos'=>'vinculos'] as $catalog=>$permission)
             @if(auth()->user()->hasPermissionTo($permission.'.listar'))<a class="button button-quiet" href="{{ route('catalogs.index',$catalog) }}">{{ ucfirst($catalog) }}</a>@endif

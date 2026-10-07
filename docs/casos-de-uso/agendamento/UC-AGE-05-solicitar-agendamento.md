@@ -15,10 +15,10 @@
 - **Status:** Rascunho
 
 ## Informações Gerais
-- **Ator Principal:** Usuário autenticado com `agendamentos.solicitar.proprio` (para si) ou `agendamentos.solicitar.qualquer` (em nome de outro)
+- **Ator Principal:** Usuário autenticado (incluindo alunos, técnicos e professores), que solicita para si; um ator com `agendamentos.solicitar.qualquer` também pode selecionar outro solicitante
 - **Atores Secundários:** Serviço de E-mail
 - **Pré-condições:**
-  - O ator está autenticado e possui a permissão de solicitação.
+  - O ator está autenticado. Para solicitar em nome de outra pessoa, possui `agendamentos.solicitar.qualquer`.
   - Existem tipos de agendamento e ambientes cadastrados e ativos.
   - As regras de agendamento estão configuradas (UC-AGE-03).
 - **Pós-condições:** Agendamento criado com status **"Pendente"**; notificações N12 disparadas.
@@ -30,9 +30,10 @@
 1. O ator acessa **"Solicitar Agendamento"** (disponível no calendário ou menu).
 2. O sistema exibe o formulário de solicitação.
 3. O ator preenche os campos obrigatórios (**RN01**):
-   - **Solicitante:** o próprio ator (pré-preenchido) ou outro usuário, se possuir `agendamentos.solicitar.qualquer` (**RN02**)
-   - **Ambiente:** selecionado da lista de ambientes ativos (FK — **RN03**)
-   - **Tipo:** selecionado da lista de tipos ativos (FK)
+   - **Solicitante:** o próprio ator ou outro usuário, se possuir `agendamentos.solicitar.qualquer` (**RN02**)
+   - **Docente responsável:** opcional; pode selecionar um docente cadastrado, informar outro nome ou permanecer sem docente associado.
+   - **Ambiente:** selecionado da lista de ambientes ativos ou informado como outro ambiente (**RN03**)
+   - **Tipo:** selecionado da lista de tipos ativos ou informado como outro tipo
    - **Motivo:** texto descritivo (obrigatório)
    - **Data:** data do agendamento
    - **Hora de início** e **Hora de fim**
@@ -72,9 +73,9 @@
 
 ## Regras de Negócio (RN)
 
-- **RN01 - Campos Obrigatórios:** Solicitante, Ambiente, Tipo, Motivo, Data, Hora de início e Hora de fim são todos obrigatórios.
-- **RN02 - Solicitante:** Com `agendamentos.solicitar.proprio`, o solicitante é sempre o próprio ator (pré-preenchido, não editável). Com `agendamentos.solicitar.qualquer`, o ator pode selecionar outro usuário do sistema como solicitante.
-- **RN03 - Ambiente por FK:** O ambiente é selecionado da lista de ativos e referenciado por chave estrangeira (não é cópia de texto — ver ADR-003).
+- **RN01 - Campos Obrigatórios:** Solicitante, Ambiente, Tipo, Motivo, Data, Hora de início e Hora de fim são obrigatórios. O docente responsável é opcional. Quando a opção "Outro" é escolhida para docente, ambiente ou tipo, o respectivo nome informado é obrigatório.
+- **RN02 - Solicitante:** Sem `agendamentos.solicitar.qualquer`, o solicitante é sempre o próprio ator autenticado. Com essa permissão, o ator pode selecionar outro usuário ativo do sistema como solicitante.
+- **RN03 - Ambiente:** Um ambiente cadastrado e ativo é referenciado por chave estrangeira (ver ADR-003). A opção "Outro" permite informar um ambiente sem vínculo a cadastro; nesse caso são usadas as regras globais de agendamento.
 - **RN04 - Bloqueios:** Data/horário bloqueados por regra de bloqueio (UC-AGE-03) rejeitam a solicitação.
 - **RN05 - Regras de Agendamento:** A solicitação é validada contra as regras do ambiente específico (se houver) e, caso contrário, contra a regra global. Dias/horários fora das regras são rejeitados.
 - **RN06 - Conflito com Aprovado:** Não é possível solicitar agendamento para horário e ambiente que já tenha agendamento **Aprovado** com sobreposição de horário. Múltiplas solicitações **Pendentes** para o mesmo slot são permitidas.

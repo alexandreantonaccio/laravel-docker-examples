@@ -24,10 +24,10 @@ cadastro, o aluno seleciona o curso de uma lista de cursos **ativos**, sem
 digitação livre. Quando não encontrar o seu curso, seleciona a opção
 **"OUTRO"** (um curso cadastrado como qualquer outro).
 
-> **Sem inicialização automática:** a tabela de cursos **não** é populada
-> na instalação do sistema. Os cursos (incluindo o registro "OUTRO") são
-> cadastrados manualmente pelo Administrador quando o sistema estiver em
-> operação (**RN07**).
+> **Inicialização:** o registro "OUTRO" é criado ativo na instalação para
+> permitir o cadastro de Alunos mesmo antes da configuração dos cursos.
+> Os demais cursos são cadastrados pelo Administrador quando o sistema
+> estiver em operação (**RN07**).
 
 > **Desacoplamento (consistente com Cargos e Domínios):** ao salvar o
 > cadastro/edição, o sistema grava no usuário o **texto do curso**
@@ -81,6 +81,6 @@ digitação livre. Quando não encontrar o seu curso, seleciona a opção
 - **RN04 - Efeito Imediato:** Alterações na lista (criação, edição, ativação/desativação) refletem imediatamente na lista de cursos disponíveis nos fluxos de cadastro/edição.
 - **RN05 - Filtro e Contagem de Uso:** A listagem permite filtrar por status (todos / ativos / desativados) e exibe, para cada curso, a quantidade de usuários que o utilizam. A contagem é obtida por correspondência textual do curso nos usuários (não há vínculo relacional — ver RN06).
 - **RN06 - Curso Desacoplado do Usuário (cópia de texto):** No cadastro/edição, o sistema grava no usuário o texto do curso escolhido, sem chave estrangeira para o registro do curso. Editar ou desativar um curso não afeta o curso de usuários já cadastrados.
-- **RN07 - Sem Inicialização Automática:** A tabela de cursos não é populada na instalação. Os cursos, incluindo o registro **"OUTRO"** usado como opção de fallback no cadastro de Aluno (UC-USR-01, RN08), são cadastrados manualmente pelo Administrador. Enquanto não houver cursos ativos (ou o "OUTRO"), o cadastro de Aluno depende desse cadastro prévio.
+- **RN07 - Inicialização da Opção de Fallback:** O registro **"OUTRO"** é criado ativo na inicialização para uso como opção de fallback no cadastro de Aluno (UC-USR-01, RN08). Os demais cursos são cadastrados pelo Administrador.
 - **RN08 - Caixa Alta:** Os nomes de curso são armazenados e exibidos em **caixa alta** (o sistema normaliza a entrada ao salvar), garantindo padronização e evitando duplicidades por diferença de capitalização.
 - **RN09 - Leitura no Cadastro não é Permissão Administrativa:** A exibição da lista de cursos ativos no cadastro/edição de usuário faz parte desses fluxos e não exige do usuário as permissões `cursos.*` (que são para a gestão administrativa de cursos).

@@ -175,6 +175,18 @@ Open your browser and navigate to [http://localhost](http://localhost).
 
 Here are some common commands and tips for using the development environment:
 
+### Material Rentals
+
+Authenticated users can browse the material inventory and submit rental requests
+for a quantity and date range. Pending and approved requests reserve stock over
+overlapping periods; administrators can approve or reject requests. Materials
+can be organized into groups with optional notification email recipients.
+
+Run `php artisan migrate` to create the material and rental tables. The material
+catalog and groups are managed from the **Materials** area; permissions for
+catalog management, group management, listing all requests, and approving
+requests are seeded by `PermissionSeeder`.
+
 ### Accessing the Workspace Container
 
 The workspace sidecar container includes Composer, Node.js, NPM, and other tools necessary for Laravel development (e.g. assets building).

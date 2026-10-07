@@ -3,6 +3,9 @@
 use App\Models\Booking;
 use App\Models\BookingType;
 use App\Models\Environment;
+use App\Models\Material;
+use App\Models\MaterialGroup;
+use App\Models\MaterialRental;
 use App\Models\User;
 use App\Models\UserProfileOption;
 use Database\Seeders\PermissionSeeder;
@@ -119,4 +122,192 @@ test('any authenticated user can request a booking only for their own account', 
     ])->assertRedirect(route('bookings.calendar'));
 
     expect(Booking::query()->sole()->requester_user_id)->toBe($requester->id);
+});
+
+test('students technicians and professors can request bookings without a teacher', function () {
+    Mail::fake();
+    $environment = useCaseEnvironment();
+    $type = useCaseType();
+    useCaseRules();
+    $date = today()->addDay()->toDateString();
+
+    foreach (['aluno', 'tecnico', 'professor'] as $profile) {
+        $requester = User::factory()->create(['profile' => $profile]);
+
+        $this->actingAs($requester)->get(route('bookings.calendar'))
+            ->assertOk()
+            ->assertSee(route('bookings.create'))
+            ->assertSee('Solicitar agendamento');
+        $this->actingAs($requester)->get(route('bookings.create'))
+            ->assertOk()
+            ->assertSee('Sem docente responsável');
+        $this->post(route('bookings.store'), [
+            'teacher_id' => null,
+            'environment_id' => $environment->id,
+            'booking_type_id' => $type->id,
+            'reason' => 'Solicitação de teste para '.$profile,
+            'booking_date' => $date,
+            'starts_at' => '10:00',
+            'ends_at' => '11:00',
+        ])->assertRedirect(route('bookings.calendar'));
+
+        $booking = Booking::query()->latest('id')->firstOrFail();
+        expect($booking->requester_user_id)->toBe($requester->id)
+            ->and($booking->teacher_id)->toBeNull();
+    }
+});
+
+test('booking requests accept custom teacher environment and type values without catalog links', function () {
+    Mail::fake();
+    $requester = User::factory()->create(['profile' => 'tecnico']);
+    $admin = useCaseAdministrator();
+    useCaseRules();
+
+    $this->actingAs($requester)->post(route('bookings.store'), [
+        'teacher_id' => 'other',
+        'teacher_other' => 'Docente convidado',
+        'environment_id' => 'other',
+        'environment_other' => 'Laboratório temporário',
+        'booking_type_id' => 'other',
+        'booking_type_other' => 'Demonstração',
+        'reason' => 'Teste com valores livres',
+        'booking_date' => today()->addDay()->toDateString(),
+        'starts_at' => '10:00',
+        'ends_at' => '11:00',
+    ])->assertRedirect(route('bookings.calendar'));
+
+    $booking = Booking::query()->sole();
+    expect($booking->teacher_id)->toBeNull()
+        ->and($booking->environment_id)->toBeNull()
+        ->and($booking->booking_type_id)->toBeNull()
+        ->and($booking->teacher_other)->toBe('Docente convidado')
+        ->and($booking->environment_other)->toBe('Laboratório temporário')
+        ->and($booking->booking_type_other)->toBe('Demonstração');
+
+    $this->actingAs($admin)->get(route('bookings.show', $booking))
+        ->assertOk()
+        ->assertSee('Docente convidado')
+        ->assertSee('Laboratório temporário')
+        ->assertSee('Demonstração');
+    $this->post(route('bookings.approve', $booking))->assertRedirect();
+    expect($booking->fresh()->status)->toBe('approved');
+});
+
+test('material rental requests reserve quantity for overlapping periods and require approval', function () {
+    Mail::fake();
+    $requester = User::factory()->create(['profile' => 'aluno']);
+    $otherRequester = User::factory()->create(['profile' => 'professor']);
+    $admin = useCaseAdministrator();
+    $group = MaterialGroup::query()->create([
+        'name' => 'Audiovisual',
+        'notification_emails' => ['responsavel@example.com'],
+        'active' => true,
+    ]);
+    $material = Material::query()->create([
+        'material_group_id' => $group->id,
+        'name' => 'Projetor',
+        'code' => 'PROJ-01',
+        'quantity' => 3,
+        'active' => true,
+    ]);
+    $start = today()->addDay()->toDateString();
+    $end = today()->addDays(3)->toDateString();
+
+    $this->actingAs($requester)->get(route('materials.index'))
+        ->assertOk()
+        ->assertSee('Projetor')
+        ->assertSee('Alugar material');
+    $this->actingAs($requester)->post(route('material-rentals.store'), [
+        'material_id' => $material->id,
+        'quantity' => 2,
+        'starts_on' => $start,
+        'ends_on' => $end,
+        'reason' => 'Apresentação acadêmica',
+    ])->assertRedirect(route('material-rentals.index'));
+
+    $pending = MaterialRental::query()->sole();
+    expect($pending->status)->toBe('pending')
+        ->and($pending->requester_user_id)->toBe($requester->id);
+
+    $this->actingAs($otherRequester)->from(route('material-rentals.create'))
+        ->post(route('material-rentals.store'), [
+            'material_id' => $material->id,
+            'quantity' => 2,
+            'starts_on' => $start,
+            'ends_on' => $end,
+            'reason' => 'Outro evento',
+        ])->assertSessionHasErrors('quantity');
+    expect(MaterialRental::query()->count())->toBe(1);
+
+    $this->actingAs($admin)->post(route('material-rentals.approve', $pending))
+        ->assertRedirect();
+    expect($pending->fresh()->status)->toBe('approved');
+
+    $this->actingAs($admin)->put(route('materials.update', $material), [
+        'name' => $material->name,
+        'code' => $material->code,
+        'quantity' => 1,
+        'material_group_id' => $group->id,
+    ])->assertStatus(422);
+    expect($material->fresh()->quantity)->toBe(3);
+});
+
+test('material stock checks allow separate reservations within the same longer period', function () {
+    Mail::fake();
+    $requester = User::factory()->create();
+    $admin = useCaseAdministrator();
+    $material = Material::query()->create([
+        'name' => 'Câmera',
+        'code' => 'CAM-01',
+        'quantity' => 2,
+        'active' => true,
+    ]);
+    $firstDay = today()->addDays(2);
+    $lastDay = today()->addDays(4);
+    foreach ([$firstDay, $lastDay] as $day) {
+        MaterialRental::query()->create([
+            'material_id' => $material->id,
+            'requester_user_id' => $admin->id,
+            'quantity' => 1,
+            'starts_on' => $day->toDateString(),
+            'ends_on' => $day->toDateString(),
+            'reason' => 'Reserva em dia separado',
+            'status' => 'approved',
+        ]);
+    }
+
+    $this->actingAs($requester)->post(route('material-rentals.store'), [
+        'material_id' => $material->id,
+        'quantity' => 1,
+        'starts_on' => $firstDay->toDateString(),
+        'ends_on' => $lastDay->toDateString(),
+        'reason' => 'Uso em todo o período',
+    ])->assertRedirect(route('material-rentals.index'));
+    expect(MaterialRental::query()->where('requester_user_id', $requester->id)->sole()->status)
+        ->toBe('pending');
+});
+
+test('administrators can manage materials and material groups', function () {
+    $admin = useCaseAdministrator();
+    $this->actingAs($admin)->post(route('material-groups.store'), [
+        'name' => 'Informática',
+        'notification_emails_text' => "equipe@example.com\nsuporte@example.com",
+    ])->assertRedirect(route('material-groups.index'));
+    $group = MaterialGroup::query()->sole();
+    expect($group->notification_emails)->toBe(['equipe@example.com', 'suporte@example.com']);
+
+    $this->post(route('materials.store'), [
+        'name' => 'Notebook',
+        'code' => 'NOTE-01',
+        'description' => 'Equipamento para empréstimo',
+        'quantity' => 4,
+        'material_group_id' => $group->id,
+    ])->assertRedirect(route('materials.index'));
+    $material = Material::query()->sole();
+    expect($material->quantity)->toBe(4)
+        ->and($material->material_group_id)->toBe($group->id);
+
+    $this->patch(route('material-groups.toggle', $group))->assertRedirect();
+    expect($group->fresh()->active)->toBeFalse()
+        ->and($material->fresh()->material_group_id)->toBeNull();
 });
